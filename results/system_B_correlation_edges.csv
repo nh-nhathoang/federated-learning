@@ -1,0 +1,11 @@
+station_i,station_j,name_i,name_j,weight
+101004,101150,Helsinki Kumpula,Hämeenlinna Katinen,0.742452776108938
+101237,101191,Lappeenranta airport,Kouvola Utti airport,0.8038882936431276
+101150,101118,Hämeenlinna Katinen,Pirkkala Tampere-Pirkkala airport,0.8312825099745907
+101150,101065,Hämeenlinna Katinen,Turku airport,0.7262921430026665
+101150,101191,Hämeenlinna Katinen,Kouvola Utti airport,0.7331723707147316
+101150,855522,Hämeenlinna Katinen,Mikkeli airport AWOS,0.7011394032474009
+101118,101065,Pirkkala Tampere-Pirkkala airport,Turku airport,0.7736972882600884
+101118,855522,Pirkkala Tampere-Pirkkala airport,Mikkeli airport AWOS,0.7132976016045097
+101065,100967,Turku airport,Salo Kiikala airfield,0.7673403352285686
+101191,855522,Kouvola Utti airport,Mikkeli airport AWOS,0.7024662926941793

@@ -1,0 +1,18 @@
+station_i,station_j,name_i,name_j,weight
+101004,101150,Helsinki Kumpula,Hämeenlinna Katinen,0.1583020443466624
+101004,100967,Helsinki Kumpula,Salo Kiikala airfield,0.21097941297309186
+101042,101237,Kotka Haapasaari,Lappeenranta airport,0.13995738933181132
+101042,101191,Kotka Haapasaari,Kouvola Utti airport,0.250472058444697
+101237,101191,Lappeenranta airport,Kouvola Utti airport,0.26919336822685636
+101237,855522,Lappeenranta airport,Mikkeli airport AWOS,0.17499105522464928
+101150,101118,Hämeenlinna Katinen,Pirkkala Tampere-Pirkkala airport,0.2674165708955622
+101150,100967,Hämeenlinna Katinen,Salo Kiikala airfield,0.22286282554192174
+101118,100967,Pirkkala Tampere-Pirkkala airport,Salo Kiikala airfield,0.11948341946546132
+101118,101267,Pirkkala Tampere-Pirkkala airport,Pori Tahkoluoto harbour,0.08825901662225016
+100946,101065,Hanko Tulliniemi,Turku airport,0.17881976709818287
+100946,100967,Hanko Tulliniemi,Salo Kiikala airfield,0.1880911756225578
+100946,151029,Hanko Tulliniemi,Mariehamn West Harbour,0.03401273353842293
+101065,100967,Turku airport,Salo Kiikala airfield,0.2218514782217117
+101065,101267,Turku airport,Pori Tahkoluoto harbour,0.06976960207302584
+101065,151029,Turku airport,Mariehamn West Harbour,0.06357587089268964
+101191,855522,Kouvola Utti airport,Mikkeli airport AWOS,0.169245473920391
