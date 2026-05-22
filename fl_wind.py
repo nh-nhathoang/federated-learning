@@ -1,28 +1,4 @@
 #!/usr/bin/env python3
-"""
-Federated Learning wind-speed prediction for 12 FMI stations.
-
-This script follows the report setup:
-- Each station is one FL node.
-- Features: current wind speed, maximum temperature, minimum temperature,
-  average relative humidity, average air pressure.
-- Target: wind speed 3 hours later.
-- Chronological split: Jan-Jul train, Aug-Sep validation, Oct-Dec test.
-- Baseline: local linear regression.
-- System A: geographic k-nearest-neighbor graph using stations.csv coordinates.
-- System B: wind-speed correlation graph.
-- FL method: GTVMin synchronous gradient-based message passing.
-
-Run from the folder containing the Excel files and stations.csv:
-    python3 fl_wind_gtvmin_completed.py --data_dir .
-
-Or from anywhere:
-    python3 fl_wind_gtvmin_completed.py --data_dir /notebooks/fl_report
-
-Required packages:
-    pip install numpy pandas scikit-learn openpyxl
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -514,8 +490,7 @@ def main() -> None:
             param_rows.append(row)
     pd.DataFrame(param_rows).to_csv(out_dir / "learned_parameters.csv", index=False)
     
-    #visual
-    #visual
+    #visualization
     # Station-level test MSE figure
 
     import matplotlib.pyplot as plt
@@ -549,7 +524,6 @@ def main() -> None:
     )
 
     plt.close()
-    #visual
     
     def visualize_graph(A, station_ids, title, save_path):
         G = nx.Graph()

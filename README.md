@@ -9,6 +9,18 @@ The project compares two graph construction strategies in graph-based federated 
 
 The implementation uses synchronous gradient-based message passing with generalized total variation minimization (GTVMin).
 
+## Why Federated Learning?
+
+Federated learning is useful for distributed prediction problems where data are collected at multiple local sites. In this project, each FMI weather station is treated as a separate learning node. Instead of combining all raw station data into one central dataset, each station trains its own local model and only exchanges model parameters through the FL network.
+
+This setup has several advantages:
+
+- **Data locality:** Raw weather observations remain at each local station.
+- **Privacy-aware learning:** The system avoids directly sharing raw local data between stations.
+- **Personalization:** Each station keeps its own model, allowing it to adapt to local wind conditions.
+- **Collaboration:** Similar stations can still benefit from each other through graph-based parameter regularization.
+- **Scalability:** New stations can be added as additional nodes in the FL network.
+
 ---
 
 ## Problem Description
@@ -186,6 +198,16 @@ The experiments show:
 - Federated learning does not clearly outperform local-only training in this experimental setting
 
 The results also suggest that geographically nearby stations do not always exhibit highly similar wind-speed behavior.
+
+Limitations:
+
+- The model is linear, so it may not capture nonlinear weather dynamics.
+- Only five weather variables are used.
+- The graph structures are fixed before training.
+- The stations have different local weather behavior, so forcing neighboring models to be similar can sometimes hurt test performance.
+- The experiment uses one year of data only.
+
+---
 
 ## AI Assistance
 
