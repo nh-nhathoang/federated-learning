@@ -19,18 +19,18 @@ import matplotlib.pyplot as plt
 
 
 STATIONS = {
-    101004: {"name": "Helsinki Kumpula", "file": "Helsinki Kumpula.xlsx"},
-    101042: {"name": "Kotka Haapasaari", "file": "Kotka Haapasaari.xlsx"},
-    101237: {"name": "Lappeenranta airport", "file": "Lappeenranta airport.xlsx"},
-    101150: {"name": "Hämeenlinna Katinen", "file": "Hämeenlinna Katinen.xlsx"},
-    101118: {"name": "Pirkkala Tampere-Pirkkala airport", "file": "Pirkkala Tampere-Pirkkala airport.xlsx"},
-    100946: {"name": "Hanko Tulliniemi", "file": "Hanko Tulliniemi.xlsx"},
-    101065: {"name": "Turku airport", "file": "Turku airport.xlsx"},
-    100967: {"name": "Salo Kiikala airfield", "file": "Salo Kiikala airfield.xlsx"},
-    101191: {"name": "Kouvola Utti airport", "file": "Kouvola Utti airport.xlsx"},
-    855522: {"name": "Mikkeli airport AWOS", "file": "Mikkeli airport AWOS.xlsx"},
-    101267: {"name": "Pori Tahkoluoto harbour", "file": "Pori Tahkoluoto harbour.xlsx"},
-    151029: {"name": "Mariehamn West Harbour", "file": "Mariehamn West Harbour.xlsx"},
+    101004: {"name": "Helsinki Kumpula", "file": "101004_helsinki_kumpula_hourly_2025.csv"},
+    101042: {"name": "Kotka Haapasaari", "file": "101042_kotka_haapasaari_hourly_2025.csv"},
+    101237: {"name": "Lappeenranta airport", "file": "101237_lappeenranta_airport_hourly_2025.csv"},
+    101150: {"name": "Hämeenlinna Katinen", "file": "101150_hameenlinna_katinen_hourly_2025.csv"},
+    101118: {"name": "Pirkkala Tampere-Pirkkala airport", "file": "101118_pirkkala_tampere_pirkkala_airport_hourly_2025.csv"},
+    100946: {"name": "Hanko Tulliniemi", "file": "100946_hanko_tulliniemi_hourly_2025.csv"},
+    101065: {"name": "Turku airport", "file": "101065_turku_airport_hourly_2025.csv"},
+    100967: {"name": "Salo Kiikala airfield", "file": "100967_salo_kiikala_airfield_hourly_2025.csv"},
+    101191: {"name": "Kouvola Utti airport", "file": "101191_kouvola_utti_airport_hourly_2025.csv"},
+    855522: {"name": "Mikkeli airport AWOS", "file": "855522_mikkeli_airport_awos_hourly_2025.csv"},
+    101267: {"name": "Pori Tahkoluoto harbour", "file": "101267_pori_tahkoluoto_harbour_hourly_2025.csv"},
+    151029: {"name": "Mariehamn West Harbour", "file": "151029_mariehamn_west_harbour_hourly_2025.csv"},
 }
 
 FEATURE_COLS = [
@@ -60,14 +60,14 @@ def normalize_filename(name: str) -> str:
 
 def find_file(data_dir: Path, expected_filename: str) -> Path:
     wanted = normalize_filename(expected_filename)
-    candidates = list(data_dir.glob("*.xlsx"))
+    candidates = list(data_dir.glob("*.csv"))
     for path in candidates:
         if normalize_filename(path.name) == wanted:
             return path
     raise FileNotFoundError(
         f"Missing file: {expected_filename}\n"
         f"Looked in: {data_dir.resolve()}\n"
-        f"Available Excel files: {[p.name for p in candidates]}"
+        f"Available csv files: {[p.name for p in candidates]}"
     )
 
 
@@ -104,29 +104,18 @@ def load_station_coordinates(data_dir: Path, stations_csv: str) -> None:
         print(f"  {sid}: {info['name']} lat={info['lat']:.6f}, lon={info['lon']:.6f}")
 
 
-def read_station_excel(path: Path, fmisid: int, name: str) -> pd.DataFrame:
+def read_station_csv(path: Path, fmisid: int, name: str) -> pd.DataFrame:
     print(f"Reading {fmisid}: {name} from {path.name}")
-    df = pd.read_excel(path, engine="openpyxl")
+    df = pd.read_csv(path)
 
-    required_time_cols = ["Year", "Month", "Day", "Time [UTC]"]
-    missing_time = [c for c in required_time_cols if c not in df.columns]
-    if missing_time:
-        raise ValueError(f"{path.name} is missing time columns: {missing_time}")
-
+    if "time_utc" not in df.columns:
+        raise ValueError(f"{path.name} is missing column: time_utc")
+    
     missing_features = [c for c in FEATURE_COLS if c not in df.columns]
     if missing_features:
         raise ValueError(f"{path.name} is missing feature columns: {missing_features}")
 
-    date_str = (
-        df["Year"].astype(str).str.zfill(4)
-        + "-"
-        + df["Month"].astype(str).str.zfill(2)
-        + "-"
-        + df["Day"].astype(str).str.zfill(2)
-        + " "
-        + df["Time [UTC]"].astype(str)
-    )
-    df["timestamp"] = pd.to_datetime(date_str, errors="coerce", utc=True)
+    df["timestamp"] = pd.to_datetime(df["time_utc"], errors="coerce", utc=True)
 
     for col in FEATURE_COLS:
         df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -168,7 +157,7 @@ def load_all_data(data_dir: Path) -> Dict[int, StationData]:
 
     for fmisid, info in STATIONS.items():
         path = find_file(data_dir, info["file"])
-        raw = read_station_excel(path, fmisid, info["name"])
+        raw = read_station_csv(path, fmisid, info["name"])
         train, val, test = chronological_split(raw)
 
         scaler = StandardScaler()
@@ -381,8 +370,8 @@ def sample_count_table(stations: Dict[int, StationData], station_ids: List[int])
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", type=str, default="data", help="Folder containing station Excel files and stations.csv")
-    parser.add_argument("--stations_csv", type=str, default="stations.csv", help="CSV with station_id, lat, lon")
+    parser.add_argument("--data_dir", type=str, default="data/fmi_hourly_2025", help="Folder containing station csv files and stations.csv")
+    parser.add_argument("--stations_csv", type=str, default="../stations.csv", help="CSV with station_id, lat, lon")
     parser.add_argument("--out_dir", type=str, default="results", help="Output folder")
     parser.add_argument("--iterations", type=int, default=2000)
     parser.add_argument("--lr", type=float, default=0.01)

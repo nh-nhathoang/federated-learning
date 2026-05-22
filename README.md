@@ -46,7 +46,7 @@ Each station trains a personalized linear regression model locally while exchang
 ## Dataset
 
 Source:
-- Finnish Meteorological Institute (FMI) Open Data
+- Finnish Meteorological Institute (FMI) Open Data (https://en.ilmatieteenlaitos.fi/open-data)
 
 Time range:
 - January 2025 – December 2025
@@ -118,11 +118,13 @@ Training is performed using synchronous gradient-based updates.
 
 ```text
 .
+├── data_api.py
 ├── fl_wind.py
 ├── requirements.txt
 ├── data/
+    └── fmi_hourly_2025/
 ├── results/
-└── figures/
+    └── figures/
 ```
 
 ---
@@ -146,16 +148,22 @@ pip3 install -r requirements.txt
 
 ## Running the Project
 
-Place:
-- station Excel files
-- `stations.csv`
-
-inside the `data/` folder.
-
-Run:
+Download FMI hourly weather data using the API script:
 
 ```bash
-python3 fl_wind.py --data_dir data
+python3 data_api.py
+```
+
+The script downloads hourly weather observations for all selected FMI stations and stores them as CSV files inside:
+
+```text
+data/fmi_hourly_2025/
+```
+
+Then run the federated learning experiment:
+
+```bash
+python3 fl_wind.py
 ```
 
 Results will be saved to:

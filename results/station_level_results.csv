@@ -23,18 +23,18 @@ fmisid,station,split,mse,mae,n_samples,method
 855522,Mikkeli airport AWOS,val,1.0311224469114129,0.7938988105594348,1462,Local only (alpha=0)
 101267,Pori Tahkoluoto harbour,val,2.7567020513902567,1.2475369401536565,1462,Local only (alpha=0)
 151029,Mariehamn West Harbour,val,1.7346490605490232,1.0047072815896139,1397,Local only (alpha=0)
-101004,Helsinki Kumpula,test,0.9775500664376799,0.7773564784063953,2200,Local only (alpha=0)
-101042,Kotka Haapasaari,test,2.502049769260189,1.234522946906058,2042,Local only (alpha=0)
-101237,Lappeenranta airport,test,0.610564498077598,0.6043066234123102,2200,Local only (alpha=0)
-101150,Hämeenlinna Katinen,test,0.8502733069794728,0.7146312187755943,2108,Local only (alpha=0)
-101118,Pirkkala Tampere-Pirkkala airport,test,0.8149655509181843,0.6988518219924214,2205,Local only (alpha=0)
-100946,Hanko Tulliniemi,test,3.278725537628038,1.404336140840249,2203,Local only (alpha=0)
-101065,Turku airport,test,0.9519848848209194,0.7651001911331929,2203,Local only (alpha=0)
-100967,Salo Kiikala airfield,test,0.5493845638677233,0.5737266586686525,2171,Local only (alpha=0)
-101191,Kouvola Utti airport,test,0.7764020175658777,0.686794348392652,2201,Local only (alpha=0)
+101004,Helsinki Kumpula,test,0.9772557892512318,0.7772642320241081,2201,Local only (alpha=0)
+101042,Kotka Haapasaari,test,2.5016905651454096,1.2345695510548094,2043,Local only (alpha=0)
+101237,Lappeenranta airport,test,0.6103688289080901,0.6042247677265903,2201,Local only (alpha=0)
+101150,Hämeenlinna Katinen,test,0.8500761670187145,0.7146049213892514,2109,Local only (alpha=0)
+101118,Pirkkala Tampere-Pirkkala airport,test,0.8155366370111231,0.6991879771841268,2206,Local only (alpha=0)
+100946,Hanko Tulliniemi,test,3.2773851493293873,1.4039574300471038,2204,Local only (alpha=0)
+101065,Turku airport,test,0.9515638717265673,0.7648234449570751,2204,Local only (alpha=0)
+100967,Salo Kiikala airfield,test,0.5493292624690965,0.5737641634021264,2172,Local only (alpha=0)
+101191,Kouvola Utti airport,test,0.7763091170196746,0.6868258667336496,2202,Local only (alpha=0)
 855522,Mikkeli airport AWOS,test,0.6582566475865745,0.6160124757435216,1377,Local only (alpha=0)
-101267,Pori Tahkoluoto harbour,test,2.963714006358381,1.3131812604144033,2201,Local only (alpha=0)
-151029,Mariehamn West Harbour,test,1.976097107826694,1.0877749540624506,2129,Local only (alpha=0)
+101267,Pori Tahkoluoto harbour,test,2.962470750094862,1.3128008245922507,2202,Local only (alpha=0)
+151029,Mariehamn West Harbour,test,1.9758627413413552,1.0878348138509586,2130,Local only (alpha=0)
 101004,Helsinki Kumpula,train,1.2227231764643016,0.8555125186902368,5087,"System A Geographic (alpha=0.001, k=2)"
 101042,Kotka Haapasaari,train,2.9010701755451502,1.3260815315877779,4998,"System A Geographic (alpha=0.001, k=2)"
 101237,Lappeenranta airport,train,0.9113991705171745,0.7409256318667365,5082,"System A Geographic (alpha=0.001, k=2)"
@@ -59,18 +59,18 @@ fmisid,station,split,mse,mae,n_samples,method
 855522,Mikkeli airport AWOS,val,1.0378415371722554,0.8035888721887249,1462,"System A Geographic (alpha=0.001, k=2)"
 101267,Pori Tahkoluoto harbour,val,2.7207510775526536,1.2421786086359614,1462,"System A Geographic (alpha=0.001, k=2)"
 151029,Mariehamn West Harbour,val,1.7269736921424892,1.006242078666333,1397,"System A Geographic (alpha=0.001, k=2)"
-101004,Helsinki Kumpula,test,0.9803579346427589,0.7776361316820982,2200,"System A Geographic (alpha=0.001, k=2)"
-101042,Kotka Haapasaari,test,2.5012580359142986,1.2343411744581332,2042,"System A Geographic (alpha=0.001, k=2)"
-101237,Lappeenranta airport,test,0.6216933236909091,0.6161912393947443,2200,"System A Geographic (alpha=0.001, k=2)"
-101150,Hämeenlinna Katinen,test,0.8489611698013283,0.7159432690572214,2108,"System A Geographic (alpha=0.001, k=2)"
-101118,Pirkkala Tampere-Pirkkala airport,test,0.8241254781415261,0.7055097160112676,2205,"System A Geographic (alpha=0.001, k=2)"
-100946,Hanko Tulliniemi,test,3.2816021217769045,1.4046024034954636,2203,"System A Geographic (alpha=0.001, k=2)"
-101065,Turku airport,test,0.9446745542821592,0.763330209329345,2203,"System A Geographic (alpha=0.001, k=2)"
-100967,Salo Kiikala airfield,test,0.5520127131488483,0.5752090228040588,2171,"System A Geographic (alpha=0.001, k=2)"
-101191,Kouvola Utti airport,test,0.7845059729960367,0.6926869754566211,2201,"System A Geographic (alpha=0.001, k=2)"
+101004,Helsinki Kumpula,test,0.9800647311458343,0.7775457956674614,2201,"System A Geographic (alpha=0.001, k=2)"
+101042,Kotka Haapasaari,test,2.5008775166392283,1.2343796552384554,2043,"System A Geographic (alpha=0.001, k=2)"
+101237,Lappeenranta airport,test,0.6214948373173543,0.6161066057408939,2201,"System A Geographic (alpha=0.001, k=2)"
+101150,Hämeenlinna Katinen,test,0.8486344651785995,0.7157934270111109,2109,"System A Geographic (alpha=0.001, k=2)"
+101118,Pirkkala Tampere-Pirkkala airport,test,0.8245357719550164,0.7057860050256013,2206,"System A Geographic (alpha=0.001, k=2)"
+100946,Hanko Tulliniemi,test,3.2802799187063716,1.4042401475031752,2204,"System A Geographic (alpha=0.001, k=2)"
+101065,Turku airport,test,0.9442572956186782,0.7630556625635656,2204,"System A Geographic (alpha=0.001, k=2)"
+100967,Salo Kiikala airfield,test,0.5519340530698577,0.5752284403877952,2172,"System A Geographic (alpha=0.001, k=2)"
+101191,Kouvola Utti airport,test,0.784438730320742,0.6927346972635365,2202,"System A Geographic (alpha=0.001, k=2)"
 855522,Mikkeli airport AWOS,test,0.66639161949813,0.628372450073444,1377,"System A Geographic (alpha=0.001, k=2)"
-101267,Pori Tahkoluoto harbour,test,2.9657121080480238,1.3154993467348493,2201,"System A Geographic (alpha=0.001, k=2)"
-151029,Mariehamn West Harbour,test,1.966723143386902,1.088618618878303,2129,"System A Geographic (alpha=0.001, k=2)"
+101267,Pori Tahkoluoto harbour,test,2.964505038631259,1.3151538647053724,2202,"System A Geographic (alpha=0.001, k=2)"
+151029,Mariehamn West Harbour,test,1.9669758294047563,1.08885058272021,2130,"System A Geographic (alpha=0.001, k=2)"
 101004,Helsinki Kumpula,train,1.2224373607090915,0.855270757731933,5087,"System B Correlation (alpha=0.1, rho=0.7)"
 101042,Kotka Haapasaari,train,2.9010728641535173,1.3260660110474742,4998,"System B Correlation (alpha=0.1, rho=0.7)"
 101237,Lappeenranta airport,train,0.9113872151071454,0.740958665102405,5082,"System B Correlation (alpha=0.1, rho=0.7)"
@@ -95,15 +95,15 @@ fmisid,station,split,mse,mae,n_samples,method
 855522,Mikkeli airport AWOS,val,1.037908510737725,0.8022212148102965,1462,"System B Correlation (alpha=0.1, rho=0.7)"
 101267,Pori Tahkoluoto harbour,val,2.72064760775402,1.242151057220646,1462,"System B Correlation (alpha=0.1, rho=0.7)"
 151029,Mariehamn West Harbour,val,1.7269690001817317,1.0062402883718884,1397,"System B Correlation (alpha=0.1, rho=0.7)"
-101004,Helsinki Kumpula,test,0.9765360135017012,0.7761278264755395,2200,"System B Correlation (alpha=0.1, rho=0.7)"
-101042,Kotka Haapasaari,test,2.500928839666213,1.23424011287657,2042,"System B Correlation (alpha=0.1, rho=0.7)"
-101237,Lappeenranta airport,test,0.621592875413212,0.616125982646063,2200,"System B Correlation (alpha=0.1, rho=0.7)"
-101150,Hämeenlinna Katinen,test,0.854903273938837,0.7200473287820781,2108,"System B Correlation (alpha=0.1, rho=0.7)"
-101118,Pirkkala Tampere-Pirkkala airport,test,0.8269246879671955,0.7066109772338038,2205,"System B Correlation (alpha=0.1, rho=0.7)"
-100946,Hanko Tulliniemi,test,3.2810416629258197,1.4044560769052816,2203,"System B Correlation (alpha=0.1, rho=0.7)"
-101065,Turku airport,test,0.9452910044646733,0.7637653497215464,2203,"System B Correlation (alpha=0.1, rho=0.7)"
-100967,Salo Kiikala airfield,test,0.5501783873376196,0.5740837776698311,2171,"System B Correlation (alpha=0.1, rho=0.7)"
-101191,Kouvola Utti airport,test,0.7818617614943155,0.6907400397075192,2201,"System B Correlation (alpha=0.1, rho=0.7)"
+101004,Helsinki Kumpula,test,0.9762403342388165,0.7760345115085643,2201,"System B Correlation (alpha=0.1, rho=0.7)"
+101042,Kotka Haapasaari,test,2.5005489260160014,1.2342788123728066,2043,"System B Correlation (alpha=0.1, rho=0.7)"
+101237,Lappeenranta airport,test,0.6213944669401867,0.6160414161599972,2201,"System B Correlation (alpha=0.1, rho=0.7)"
+101150,Hämeenlinna Katinen,test,0.8545766882086581,0.719899177061257,2109,"System B Correlation (alpha=0.1, rho=0.7)"
+101118,Pirkkala Tampere-Pirkkala airport,test,0.8273842423507434,0.7069056796949719,2206,"System B Correlation (alpha=0.1, rho=0.7)"
+100946,Hanko Tulliniemi,test,3.2797191117625366,1.4040933899938568,2204,"System B Correlation (alpha=0.1, rho=0.7)"
+101065,Turku airport,test,0.9448733724307499,0.7634903089023317,2204,"System B Correlation (alpha=0.1, rho=0.7)"
+100967,Salo Kiikala airfield,test,0.5500971994772262,0.574100968941851,2172,"System B Correlation (alpha=0.1, rho=0.7)"
+101191,Kouvola Utti airport,test,0.7818029107230517,0.6907931249779151,2202,"System B Correlation (alpha=0.1, rho=0.7)"
 855522,Mikkeli airport AWOS,test,0.6648697799414963,0.6269188137187406,1377,"System B Correlation (alpha=0.1, rho=0.7)"
-101267,Pori Tahkoluoto harbour,test,2.9654527118776137,1.315429359063332,2201,"System B Correlation (alpha=0.1, rho=0.7)"
-151029,Mariehamn West Harbour,test,1.9667056730858954,1.088612673044525,2129,"System B Correlation (alpha=0.1, rho=0.7)"
+101267,Pori Tahkoluoto harbour,test,2.964245896021969,1.315084031150496,2202,"System B Correlation (alpha=0.1, rho=0.7)"
+151029,Mariehamn West Harbour,test,1.9669584361013457,1.0888446614111755,2130,"System B Correlation (alpha=0.1, rho=0.7)"
