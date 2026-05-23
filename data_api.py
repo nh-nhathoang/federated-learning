@@ -18,20 +18,44 @@ PARAMETERS = [
     "PA_PT1H_AVG",  # Average air pressure [hPa]
 ]
 
+# uncomment or add more stations to download and check data availability for 2025
+# you can also check the station list and their fmisid from https://en.ilmatieteenlaitos.fi/open-data-stations
 STATIONS = {
-    101004: "Helsinki Kumpula",
-    104796: "Lahti Sopenkorpi",
-    101042: "Kotka Haapasaari",
-    101237: "Lappeenranta airport",
-    101150: "Hämeenlinna Katinen",
-    101118: "Pirkkala Tampere-Pirkkala airport",
-    100946: "Hanko Tulliniemi",
-    101065: "Turku airport",
-    100967: "Salo Kiikala airfield",
-    101191: "Kouvola Utti airport",
-    855522: "Mikkeli airport AWOS",
-    101267: "Pori Tahkoluoto harbour",
-    151029: "Mariehamn West Harbour", 
+    #101004: "Helsinki Kumpula",
+    #104796: "Lahti Sopenkorpi", not enough data available for 2025
+    #101042: "Kotka Haapasaari",
+    #101237: "Lappeenranta airport",
+    #101150: "Hämeenlinna Katinen",
+    #101118: "Pirkkala Tampere-Pirkkala airport",
+    #100946: "Hanko Tulliniemi",
+    #101065: "Turku airport",
+    #100967: "Salo Kiikala airfield",
+    #101191: "Kouvola Utti airport",
+    #855522: "Mikkeli airport AWOS",
+    #101267: "Pori Tahkoluoto harbour",
+    #151029: "Mariehamn West Harbour",
+    #100691: "Espoo Leppävaara Läkkisepänkuja", not enough data available for 2025
+    #100723: "Espoo Luukki", not enough data available for 2025
+    #101000: "Espoo Latokaski", not enough data available for 2025
+    #106949: "Espoo Länsiväylä Friisilä", not enough data available for 2025
+    #108106: "Espoo Tapiola 4", not enough data available for 2025
+    #874863: "Espoo Tapiola",
+    #101022: "Porvoo Kalbådagrund",
+    #108157: "Vantaa Kehä III Viinikkala", not enough data available for 2025
+    #103807: "Oulu Santapankki", not enough data available for 2025
+    #108040: "Oulu Kaukovainio", not enough data available for 2025
+    #103124: "Oulu Nokela", not enough data available for 2025
+    #101794: "Oulu Vihreäsaari satama",
+    #101783: "Kemi I majakka",
+    #101928: "Rovaniemi rautatieasema",
+    #102033: "Inari Ivalo lentoasema",
+    #106435: "Muonio Oustajärvi",
+    #101913: "Kolari Kattilamaa", not enough data available for 2025
+    #101950: "Kemijärvi lentokenttä",
+    #101885: "Taivalkoski kirkonkylä", not enough data available for 2025
+    #101956: "Salla Kelloselkä", not enough data available for 2025
+    101851: "Tornio Kaakkuri", 
+
 }
 
 OUT_DIR = Path("data/fmi_hourly_2025")
@@ -215,7 +239,7 @@ def main():
         df_all = pd.concat(all_frames, ignore_index=True)
         df_all = df_all.sort_values(["station", "time_utc"])
 
-        combined_file = OUT_DIR / "fmi_12_stations_hourly_2025.csv"
+        combined_file = OUT_DIR / "fmi_stations_hourly_2025.csv"
         df_all.to_csv(combined_file, index=False)
 
         print("\nDone.")

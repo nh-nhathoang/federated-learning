@@ -17,20 +17,29 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
 
-
+# add or remove stations for FL network 
 STATIONS = {
-    101004: {"name": "Helsinki Kumpula", "file": "101004_helsinki_kumpula_hourly_2025.csv"},
-    101042: {"name": "Kotka Haapasaari", "file": "101042_kotka_haapasaari_hourly_2025.csv"},
-    101237: {"name": "Lappeenranta airport", "file": "101237_lappeenranta_airport_hourly_2025.csv"},
-    101150: {"name": "Hämeenlinna Katinen", "file": "101150_hameenlinna_katinen_hourly_2025.csv"},
-    101118: {"name": "Pirkkala Tampere-Pirkkala airport", "file": "101118_pirkkala_tampere_pirkkala_airport_hourly_2025.csv"},
     100946: {"name": "Hanko Tulliniemi", "file": "100946_hanko_tulliniemi_hourly_2025.csv"},
-    101065: {"name": "Turku airport", "file": "101065_turku_airport_hourly_2025.csv"},
     100967: {"name": "Salo Kiikala airfield", "file": "100967_salo_kiikala_airfield_hourly_2025.csv"},
+    101004: {"name": "Helsinki Kumpula", "file": "101004_helsinki_kumpula_hourly_2025.csv"},
+    101022: {"name": "Porvoo Kalbådagrund", "file": "101022_porvoo_kalbådagrund_hourly_2025.csv"},
+    101042: {"name": "Kotka Haapasaari", "file": "101042_kotka_haapasaari_hourly_2025.csv"},
+    101065: {"name": "Turku airport", "file": "101065_turku_airport_hourly_2025.csv"},
+    101118: {"name": "Pirkkala Tampere-Pirkkala airport", "file": "101118_pirkkala_tampere_pirkkala_airport_hourly_2025.csv"},
+    101150: {"name": "Hämeenlinna Katinen", "file": "101150_hameenlinna_katinen_hourly_2025.csv"},
     101191: {"name": "Kouvola Utti airport", "file": "101191_kouvola_utti_airport_hourly_2025.csv"},
-    855522: {"name": "Mikkeli airport AWOS", "file": "855522_mikkeli_airport_awos_hourly_2025.csv"},
+    101237: {"name": "Lappeenranta airport", "file": "101237_lappeenranta_airport_hourly_2025.csv"},
     101267: {"name": "Pori Tahkoluoto harbour", "file": "101267_pori_tahkoluoto_harbour_hourly_2025.csv"},
+    101783: {"name": "Kemi I majakka", "file": "101783_kemi_i_majakka_hourly_2025.csv"},
+    101794: {"name": "Oulu Vihreäsaari satama", "file": "101794_oulu_vihreasaari_satama_hourly_2025.csv"},
+    101851: {"name": "Tornio Kaakkuri", "file": "101851_tornio_kaakkuri_hourly_2025.csv"},
+    101928: {"name": "Rovaniemi rautatieasema", "file": "101928_rovaniemi_rautatieasema_hourly_2025.csv"},
+    101950: {"name": "Kemijärvi lentokenttä", "file": "101950_kemijarvi_lentokentta_hourly_2025.csv"},
+    102033: {"name": "Inari Ivalo lentoasema", "file": "102033_inari_ivalo_lentoasema_hourly_2025.csv"},
+    106435: {"name": "Muonio Oustajärvi", "file": "106435_muonio_oustajarvi_hourly_2025.csv"},
     151029: {"name": "Mariehamn West Harbour", "file": "151029_mariehamn_west_harbour_hourly_2025.csv"},
+    855522: {"name": "Mikkeli airport AWOS", "file": "855522_mikkeli_airport_awos_hourly_2025.csv"},
+    874863: {"name": "Espoo Tapiola", "file": "874863_espoo_tapiola_hourly_2025.csv"},
 }
 
 FEATURE_COLS = [
