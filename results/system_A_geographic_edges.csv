@@ -18,12 +18,3 @@ station_i,station_j,name_i,name_j,weight
 101191,101237,Kouvola Utti airport,Lappeenranta airport,0.26919336822685636
 101191,855522,Kouvola Utti airport,Mikkeli airport AWOS,0.169245473920391
 101237,855522,Lappeenranta airport,Mikkeli airport AWOS,0.17499105522464928
-101783,101794,Kemi I majakka,Oulu Vihreäsaari satama,0.22885007551937236
-101783,101851,Kemi I majakka,Tornio Kaakkuri,0.34001043493302435
-101794,101851,Oulu Vihreäsaari satama,Tornio Kaakkuri,0.10836190845997572
-101851,101928,Tornio Kaakkuri,Rovaniemi rautatieasema,0.14073032813316813
-101851,101950,Tornio Kaakkuri,Kemijärvi lentokenttä,0.03831409962752478
-101928,101950,Rovaniemi rautatieasema,Kemijärvi lentokenttä,0.2544627358583707
-101928,106435,Rovaniemi rautatieasema,Muonio Oustajärvi,0.02585116476715747
-101950,102033,Kemijärvi lentokenttä,Inari Ivalo lentoasema,0.014607491846387675
-102033,106435,Inari Ivalo lentoasema,Muonio Oustajärvi,0.03361630848421201
