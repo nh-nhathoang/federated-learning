@@ -286,15 +286,9 @@ def train_local_closed_form(stations: Dict[int, StationData], station_ids: List[
     return np.vstack(params)
 
 
-def train_gtvmin(
-    stations: Dict[int, StationData],
-    station_ids: List[int],
-    A: np.ndarray,
-    alpha: float,
-    iterations: int,
-    lr: float,
-    regularize_intercept: bool,
-) -> np.ndarray:
+def train_gtvmin(stations: Dict[int, StationData], station_ids: List[int], A: np.ndarray, 
+                 alpha: float, iterations: int, lr: float, regularize_intercept: bool, log_every: int = 50,
+                 ) -> Tuple[np.ndarray, List]:
     n = len(station_ids)
     d = len(FEATURE_COLS) + 1
     W = np.zeros((n, d), dtype=float)
@@ -307,6 +301,7 @@ def train_gtvmin(
     reg_mask = np.ones(d, dtype=float)
     if not regularize_intercept:
         reg_mask[-1] = 0.0
+    loss_history = []
 
     for it in range(iterations):
         W_old = W.copy()
@@ -325,12 +320,22 @@ def train_gtvmin(
 
         W = W_old - lr * grad
 
+        if it % log_every == 0:
+            total_loss = 0.0
+            for i, (X_i, y_i) in enumerate(train_arrays):
+                total_loss += float(np.mean((X_i @ W[i] - y_i) ** 2))
+                for j in range(n):
+                    if A[i, j] > 0:
+                        diff_ij = (W[i] - W[j]) * reg_mask
+                        total_loss += alpha * A[i, j] * float(np.dot(diff_ij, diff_ij))
+            loss_history.append((it, total_loss))
+
         if not np.all(np.isfinite(W)):
             raise FloatingPointError(
                 f"GTVMin diverged at iteration {it}. Try smaller --lr, e.g. --lr 0.001"
             )
 
-    return W
+    return W, loss_history
 
 
 def evaluate_params(W: np.ndarray, stations: Dict[int, StationData], station_ids: List[int], split: str):
@@ -387,8 +392,8 @@ def main() -> None:
     parser.add_argument("--k", type=int, default=2)
     parser.add_argument("--sigma_km", type=float, default=50.0)
     parser.add_argument("--regularize_intercept", action="store_true", help="Also graph-regularize intercepts")
-    parser.add_argument("--alphas", type=float, nargs="+", default=[0.001, 0.01, 0.1, 1.0])
-    parser.add_argument("--corr_thresholds", type=float, nargs="+", default=[0.5, 0.6, 0.7, 0.8, 0.9])
+    parser.add_argument("--alphas", type=float, nargs="+", default=[0.0001, 0.0005, 0.001, 0.003, 0.005, 0.008, 0.01, 0.03, 0.05])
+    parser.add_argument("--corr_thresholds", type=float, nargs="+", default=[0.3, 0.4, 0.5, 0.6, 0.7])
     args = parser.parse_args()
 
     data_dir = Path(args.data_dir)
@@ -421,7 +426,7 @@ def main() -> None:
     best_geo = None
     for alpha in args.alphas:
         try:
-            W_geo = train_gtvmin(stations, station_ids, A_geo, alpha, args.iterations, args.lr, args.regularize_intercept)
+            W_geo, _ = train_gtvmin(stations, station_ids, A_geo, alpha, args.iterations, args.lr, args.regularize_intercept)
             val_mse, val_mae, _ = evaluate_params(W_geo, stations, station_ids, "val")
             print(f"  System A alpha={alpha:g}: val MSE={val_mse:.4f}, val MAE={val_mae:.4f}")
         except FloatingPointError as exc:
@@ -432,6 +437,11 @@ def main() -> None:
 
     if best_geo is None:
         raise RuntimeError("All System A alpha values diverged. Try --lr 0.001")
+        
+    _, loss_hist_geo = train_gtvmin(
+        stations, station_ids, A_geo,
+        best_geo["alpha"], args.iterations, args.lr, args.regularize_intercept
+    )
 
     summary, detail = evaluate_all_splits(
         f"System A Geographic (alpha={best_geo['alpha']:g}, k={args.k})",
@@ -450,7 +460,7 @@ def main() -> None:
             continue
         for alpha in args.alphas:
             try:
-                W_corr = train_gtvmin(stations, station_ids, A_corr, alpha, args.iterations, args.lr, args.regularize_intercept)
+                W_corr, _ = train_gtvmin(stations, station_ids, A_corr, alpha, args.iterations, args.lr, args.regularize_intercept)
                 val_mse, val_mae, _ = evaluate_params(W_corr, stations, station_ids, "val")
                 print(f"  System B threshold={threshold:g}, alpha={alpha:g}, edges={n_edges}: val MSE={val_mse:.4f}, val MAE={val_mae:.4f}")
             except FloatingPointError as exc:
@@ -461,6 +471,11 @@ def main() -> None:
 
     if best_corr is None:
         raise RuntimeError("No valid correlation graph. Try lower thresholds, e.g. --corr_thresholds 0.1 0.2 0.3 0.4 0.5")
+
+    _, loss_hist_corr = train_gtvmin(
+        stations, station_ids, best_corr["A"],
+        best_corr["alpha"], args.iterations, args.lr, args.regularize_intercept
+    )
 
     graph_edges_dataframe(best_corr["A"], station_ids).to_csv(out_dir / "system_B_correlation_edges.csv", index=False)
     summary, detail = evaluate_all_splits(
@@ -488,10 +503,29 @@ def main() -> None:
             param_rows.append(row)
     pd.DataFrame(param_rows).to_csv(out_dir / "learned_parameters.csv", index=False)
     
+
+    iters_A, losses_A = zip(*loss_hist_geo)
+    iters_B, losses_B = zip(*loss_hist_corr)
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    axes[0].plot(iters_A, losses_A)
+    axes[0].set_xlabel("Iteration")
+    axes[0].set_ylabel("GTVMin objective")
+    axes[0].set_title(f"System A convergence (alpha={best_geo['alpha']:g})")
+    axes[0].set_yscale("log")
+
+    axes[1].plot(iters_B, losses_B)
+    axes[1].set_xlabel("Iteration")
+    axes[1].set_ylabel("GTVMin objective")
+    axes[1].set_title(f"System B convergence (alpha={best_corr['alpha']:g}, rho={best_corr['threshold']:g})")
+    axes[1].set_yscale("log")
+
+    plt.tight_layout()
+    plt.savefig(out_dir / "convergence_curves.png", dpi=150, bbox_inches="tight")
+    plt.close()
+
     #visualization
     # Station-level test MSE figure
-
-    import matplotlib.pyplot as plt
 
     test_detail = detail_df[detail_df["split"] == "test"]
 
