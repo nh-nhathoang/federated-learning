@@ -70,13 +70,13 @@ Chronological splitting is used because this is a time-series prediction problem
 - Stations connect to their k nearest geographic neighbors
 - Edge weights:
   
-\[
+$$
 A_{i,i'} = \exp(-d_{i,i'}/\sigma)
-\]
+$$
 
 where:
-- \(d_{i,i'}\) is geographic distance
-- \(\sigma\) controls exponential decay
+- $d_{i,i'}$ is geographic distance
+- $\sigma$ controls exponential decay
 
 ---
 
@@ -84,12 +84,12 @@ where:
 
 - Stations connect only when Pearson correlation exceeds a threshold
 
-\[
+$$
 A_{i,i'} = \max(0, \rho_{i,i'})
-\]
+$$
 
 where:
-- \(\rho_{i,i'}\) is Pearson correlation between wind-speed time series
+- $\rho_{i,i'}$ is Pearson correlation between wind-speed time series
 
 ---
 
@@ -97,14 +97,14 @@ where:
 
 The project uses generalized total variation minimization (GTVMin):
 
-\[
+$$
 \sum_i L_i(w^{(i)})
 +
 \alpha
 \sum_{(i,i') \in E}
 A_{i,i'}
 \|w^{(i)} - w^{(i')}\|_2^2
-\]
+$$
 
 where:
 - the first term minimizes local prediction error
@@ -119,7 +119,8 @@ Training is performed using synchronous gradient-based updates.
 ```text
 .
 ├── data_api.py
-├── fl_wind.py
+├── data_processing.py
+├── main.py
 ├── requirements.txt
 ├── data/
     └── fmi_hourly_2025/
@@ -163,7 +164,7 @@ data/fmi_hourly_2025/
 Then run the federated learning experiment:
 
 ```bash
-python3 fl_wind.py
+python3 main.py
 ```
 
 Results will be saved to:
