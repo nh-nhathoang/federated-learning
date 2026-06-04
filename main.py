@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+from data_processing import *
 import argparse
-import math
-import unicodedata
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Tuple
 import networkx as nx
@@ -13,7 +11,6 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
 
@@ -52,234 +49,10 @@ FEATURE_COLS = [
 TARGET_COL = "target_wind_speed_t_plus_3"
 
 
-@dataclass
-class StationData:
-    fmisid: int
-    name: str
-    raw: pd.DataFrame
-    train: pd.DataFrame
-    val: pd.DataFrame
-    test: pd.DataFrame
-    scaler: StandardScaler
-
-
-def normalize_filename(name: str) -> str:
-    return unicodedata.normalize("NFC", name).lower()
-
-
-def find_file(data_dir: Path, expected_filename: str) -> Path:
-    wanted = normalize_filename(expected_filename)
-    candidates = list(data_dir.glob("*.csv"))
-    for path in candidates:
-        if normalize_filename(path.name) == wanted:
-            return path
-    raise FileNotFoundError(
-        f"Missing file: {expected_filename}\n"
-        f"Looked in: {data_dir.resolve()}\n"
-        f"Available csv files: {[p.name for p in candidates]}"
-    )
-
-
-def load_station_coordinates(data_dir: Path, stations_csv: str) -> None:
-    csv_path = data_dir / stations_csv
-    if not csv_path.exists():
-        raise FileNotFoundError(
-            f"Missing coordinates file: {csv_path}\n"
-            "The script needs stations.csv with columns: station_id, station, lat, lon."
-        )
-
-    coords = pd.read_csv(csv_path)
-    required = {"station_id", "lat", "lon"}
-    missing_cols = required - set(coords.columns)
-    if missing_cols:
-        raise ValueError(f"{csv_path.name} is missing columns: {sorted(missing_cols)}")
-
-    coords["station_id"] = coords["station_id"].astype(int)
-    coords = coords.set_index("station_id")
-
-    missing_ids = []
-    for sid, info in STATIONS.items():
-        if sid not in coords.index:
-            missing_ids.append(sid)
-        else:
-            info["lat"] = float(coords.loc[sid, "lat"])
-            info["lon"] = float(coords.loc[sid, "lon"])
-
-    if missing_ids:
-        raise ValueError(f"stations.csv is missing these station IDs: {missing_ids}")
-
-    print("Loaded coordinates from", csv_path)
-    for sid, info in STATIONS.items():
-        print(f"  {sid}: {info['name']} lat={info['lat']:.6f}, lon={info['lon']:.6f}")
-
-
-def read_station_csv(path: Path, fmisid: int, name: str) -> pd.DataFrame:
-    print(f"Reading {fmisid}: {name} from {path.name}")
-    df = pd.read_csv(path)
-
-    if "time_utc" not in df.columns:
-        raise ValueError(f"{path.name} is missing column: time_utc")
-    
-    missing_features = [c for c in FEATURE_COLS if c not in df.columns]
-    if missing_features:
-        raise ValueError(f"{path.name} is missing feature columns: {missing_features}")
-
-    df["timestamp"] = pd.to_datetime(df["time_utc"], errors="coerce", utc=True)
-
-    for col in FEATURE_COLS:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    df = df.sort_values("timestamp").reset_index(drop=True)
-    df[TARGET_COL] = df["Wind speed [m/s]"].shift(-3)
-    df["fmisid"] = fmisid
-    df["station_name"] = name
-
-    needed = ["timestamp", "fmisid", "station_name"] + FEATURE_COLS + [TARGET_COL]
-    df = df[needed].dropna().reset_index(drop=True)
-    return df
-
-
-def chronological_split(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    train_start = pd.Timestamp("2025-01-01", tz="UTC")
-    val_start = pd.Timestamp("2025-08-01", tz="UTC")
-    test_start = pd.Timestamp("2025-10-01", tz="UTC")
-    end = pd.Timestamp("2026-01-01", tz="UTC")
-
-    train = df[(df["timestamp"] >= train_start) & (df["timestamp"] < val_start)].copy()
-    val = df[(df["timestamp"] >= val_start) & (df["timestamp"] < test_start)].copy()
-    test = df[(df["timestamp"] >= test_start) & (df["timestamp"] < end)].copy()
-
-    if len(train) == 0 or len(val) == 0 or len(test) == 0:
-        print("Warning: date split did not find full 2025 data. Falling back to 60/20/20 chronological split.")
-        n = len(df)
-        n_train = int(0.60 * n)
-        n_val = int(0.20 * n)
-        train = df.iloc[:n_train].copy()
-        val = df.iloc[n_train:n_train + n_val].copy()
-        test = df.iloc[n_train + n_val:].copy()
-
-    return train, val, test
-
-
-def load_all_data(data_dir: Path) -> Dict[int, StationData]:
-    stations: Dict[int, StationData] = {}
-
-    for fmisid, info in STATIONS.items():
-        path = find_file(data_dir, info["file"])
-        raw = read_station_csv(path, fmisid, info["name"])
-        train, val, test = chronological_split(raw)
-
-        scaler = StandardScaler()
-        scaler.fit(train[FEATURE_COLS])
-
-        def standardize(split_df: pd.DataFrame) -> pd.DataFrame:
-            split_df = split_df.copy()
-            scaled = scaler.transform(split_df[FEATURE_COLS])
-            for j, col in enumerate(FEATURE_COLS):
-                split_df[col] = scaled[:, j].astype(float)
-            return split_df
-
-        stations[fmisid] = StationData(
-            fmisid=fmisid,
-            name=info["name"],
-            raw=raw,
-            train=standardize(train),
-            val=standardize(val),
-            test=standardize(test),
-            scaler=scaler,
-        )
-
-    return stations
-
-
-def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    r = 6371.0
-    p1 = math.radians(lat1)
-    p2 = math.radians(lat2)
-    dp = math.radians(lat2 - lat1)
-    dl = math.radians(lon2 - lon1)
-    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * r * math.asin(math.sqrt(a))
-
-
-def geographic_graph(station_ids: List[int], k: int, sigma_km: float) -> np.ndarray:
-    n = len(station_ids)
-    A = np.zeros((n, n), dtype=float)
-
-    for i, sid_i in enumerate(station_ids):
-        distances = []
-        for j, sid_j in enumerate(station_ids):
-            if i == j:
-                continue
-            d = haversine_km(
-                STATIONS[sid_i]["lat"],
-                STATIONS[sid_i]["lon"],
-                STATIONS[sid_j]["lat"],
-                STATIONS[sid_j]["lon"],
-            )
-            distances.append((d, j))
-
-        for d, j in sorted(distances)[:k]:
-            weight = math.exp(-d / sigma_km)
-            A[i, j] = max(A[i, j], weight)
-            A[j, i] = max(A[j, i], weight)
-
-    return A
-
-
-def correlation_graph(stations: Dict[int, StationData], station_ids: List[int], threshold: float) -> np.ndarray:
-    n = len(station_ids)
-    A = np.zeros((n, n), dtype=float)
-
-    wind_series = {
-        sid: stations[sid].train.set_index("timestamp")["Wind speed [m/s]"]
-        for sid in station_ids
-    }
-
-    for i, sid_i in enumerate(station_ids):
-        for j in range(i + 1, n):
-            sid_j = station_ids[j]
-            joined = pd.concat([wind_series[sid_i], wind_series[sid_j]], axis=1, join="inner").dropna()
-            if len(joined) < 10:
-                rho = 0.0
-            else:
-                rho = float(joined.iloc[:, 0].corr(joined.iloc[:, 1]))
-            if np.isfinite(rho) and rho >= threshold:
-                A[i, j] = max(0.0, rho)
-                A[j, i] = max(0.0, rho)
-
-    return A
-
-
-def graph_edges_dataframe(A: np.ndarray, station_ids: List[int]) -> pd.DataFrame:
-    rows = []
-    for i in range(len(station_ids)):
-        for j in range(i + 1, len(station_ids)):
-            if A[i, j] > 0:
-                rows.append({
-                    "station_i": station_ids[i],
-                    "station_j": station_ids[j],
-                    "name_i": STATIONS[station_ids[i]]["name"],
-                    "name_j": STATIONS[station_ids[j]]["name"],
-                    "weight": A[i, j],
-                })
-    return pd.DataFrame(rows)
-
-
-def xy(df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
-    X = df[FEATURE_COLS].to_numpy(dtype=float)
-    y = df[TARGET_COL].to_numpy(dtype=float)
-    return X, y
-
-
-def add_intercept_column(X: np.ndarray) -> np.ndarray:
-    return np.column_stack([X, np.ones(len(X))])
-
-
 def train_local_closed_form(stations: Dict[int, StationData], station_ids: List[int]) -> np.ndarray:
     params = []
     for sid in station_ids:
-        X_train, y_train = xy(stations[sid].train)
+        X_train, y_train = xy(stations[sid].train, FEATURE_COLS, TARGET_COL)
         model = LinearRegression()
         model.fit(X_train, y_train)
         params.append(np.r_[model.coef_, model.intercept_])
@@ -295,7 +68,7 @@ def train_gtvmin(stations: Dict[int, StationData], station_ids: List[int], A: np
 
     train_arrays = []
     for sid in station_ids:
-        X, y = xy(stations[sid].train)
+        X, y = xy(stations[sid].train, FEATURE_COLS, TARGET_COL)
         train_arrays.append((add_intercept_column(X), y))
 
     reg_mask = np.ones(d, dtype=float)
@@ -342,7 +115,7 @@ def evaluate_params(W: np.ndarray, stations: Dict[int, StationData], station_ids
     rows = []
     for i, sid in enumerate(station_ids):
         df = getattr(stations[sid], split)
-        X, y = xy(df)
+        X, y = xy(df, FEATURE_COLS, TARGET_COL)
         pred = add_intercept_column(X) @ W[i]
         rows.append({
             "fmisid": sid,
@@ -381,6 +154,63 @@ def sample_count_table(stations: Dict[int, StationData], station_ids: List[int])
         })
     return pd.DataFrame(rows)
 
+def visualize_graph(A, station_ids, title, save_path):
+    G = nx.Graph()
+
+    # add nodes
+    for sid in station_ids:
+        G.add_node(sid)
+
+    # add weighted edges
+    for i in range(len(station_ids)):
+        for j in range(i + 1, len(station_ids)):
+            if A[i, j] > 0:
+                G.add_edge(
+                    station_ids[i],
+                    station_ids[j],
+                    weight=round(A[i, j], 2)
+                )
+
+    plt.figure(figsize=(8, 6))
+
+    pos = nx.spring_layout(
+        G,
+        seed=42,
+        k=1.5
+    )
+
+    nx.draw(
+        G,
+        pos,
+        with_labels=True,
+        node_size=1800,
+        font_size=10,
+        width=2
+    )
+
+    edge_labels = nx.get_edge_attributes(G, "weight")
+
+    nx.draw_networkx_edge_labels(
+        G,
+        pos,
+        edge_labels=edge_labels,
+        font_size=8,
+        rotate=False
+    )
+
+    plt.title(title)
+    plt.axis("off")
+
+    plt.tight_layout()
+
+    plt.savefig(
+        save_path,
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+    
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -400,8 +230,8 @@ def main() -> None:
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    load_station_coordinates(data_dir, args.stations_csv)
-    stations = load_all_data(data_dir)
+    load_station_coordinates(data_dir, args.stations_csv, STATIONS)
+    stations = load_all_data(data_dir, STATIONS, FEATURE_COLS, TARGET_COL)
     station_ids = list(STATIONS.keys())
 
     counts = sample_count_table(stations, station_ids)
@@ -419,8 +249,8 @@ def main() -> None:
     details.append(detail)
 
     print("\nConstructing System A geographic graph...")
-    A_geo = geographic_graph(station_ids, k=args.k, sigma_km=args.sigma_km)
-    graph_edges_dataframe(A_geo, station_ids).to_csv(out_dir / "system_A_geographic_edges.csv", index=False)
+    A_geo = geographic_graph(station_ids, k=args.k, sigma_km=args.sigma_km, stations=STATIONS)
+    graph_edges_dataframe(A_geo, station_ids, STATIONS).to_csv(out_dir / "system_A_geographic_edges.csv", index=False)
 
     print("Selecting alpha for System A using validation MSE...")
     best_geo = None
@@ -477,7 +307,7 @@ def main() -> None:
         best_corr["alpha"], args.iterations, args.lr, args.regularize_intercept
     )
 
-    graph_edges_dataframe(best_corr["A"], station_ids).to_csv(out_dir / "system_B_correlation_edges.csv", index=False)
+    graph_edges_dataframe(best_corr["A"], station_ids, STATIONS).to_csv(out_dir / "system_B_correlation_edges.csv", index=False)
     summary, detail = evaluate_all_splits(
         f"System B Correlation (alpha={best_corr['alpha']:g}, rho={best_corr['threshold']:g})",
         best_corr["W"], stations, station_ids
@@ -556,77 +386,10 @@ def main() -> None:
     )
 
     plt.close()
-    
-    def visualize_graph(A, station_ids, title, save_path):
-        G = nx.Graph()
-
-        # add nodes
-        for sid in station_ids:
-            G.add_node(sid)
-
-        # add weighted edges
-        for i in range(len(station_ids)):
-            for j in range(i + 1, len(station_ids)):
-                if A[i, j] > 0:
-                    G.add_edge(
-                        station_ids[i],
-                        station_ids[j],
-                        weight=round(A[i, j], 2)
-                    )
-
-        plt.figure(figsize=(8, 6))
-
-        pos = nx.spring_layout(
-            G,
-            seed=42,
-            k=1.5
-        )
-
-        nx.draw(
-            G,
-            pos,
-            with_labels=True,
-            node_size=1800,
-            font_size=10,
-            width=2
-        )
-
-        edge_labels = nx.get_edge_attributes(G, "weight")
-
-        nx.draw_networkx_edge_labels(
-            G,
-            pos,
-            edge_labels=edge_labels,
-            font_size=8,
-            rotate=False
-        )
-
-        plt.title(title)
-        plt.axis("off")
-
-        plt.tight_layout()
-
-        plt.savefig(
-            save_path,
-            dpi=300,
-            bbox_inches="tight"
-        )
-
-        plt.close()
         
-    visualize_graph(
-        A_geo,
-        station_ids,
-        "System A Geographic Graph",
-        out_dir / "system_A_graph.png"
-    )
+    visualize_graph(A_geo, station_ids, "System A Geographic Graph", out_dir / "system_A_graph.png")
 
-    visualize_graph(
-        best_corr["A"],
-        station_ids,
-        "System B Correlation Graph",
-        out_dir / "system_B_graph.png"
-    )
+    visualize_graph(best_corr["A"], station_ids, "System B Correlation Graph", out_dir / "system_B_graph.png")
 
 
     print("\nFinal average results:")
