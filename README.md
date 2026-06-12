@@ -55,10 +55,10 @@ Number of stations:
 - 12 stations in southern Finland
 
 Train / validation / test split:
-- 60% train
-- 20% validation
-- 20% test
-
+- Train: Jan–Jul 2025
+- Validation: Aug–Sep 2025
+- Test: Oct–Dec 2025
+(60/20/20 chronological split if full-year 2025 data is unavailable for a station.)
 Chronological splitting is used because this is a time-series prediction problem.
 
 ---

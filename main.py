@@ -165,49 +165,24 @@ def visualize_graph(A, station_ids, title, save_path):
     for i in range(len(station_ids)):
         for j in range(i + 1, len(station_ids)):
             if A[i, j] > 0:
-                G.add_edge(
-                    station_ids[i],
-                    station_ids[j],
-                    weight=round(A[i, j], 2)
-                )
+                G.add_edge(station_ids[i], station_ids[j], weight=round(A[i, j], 2))
 
     plt.figure(figsize=(8, 6))
 
-    pos = nx.spring_layout(
-        G,
-        seed=42,
-        k=1.5
-    )
+    pos = nx.spring_layout(G, seed=42, k=1.5)  # positions for all nodes
 
-    nx.draw(
-        G,
-        pos,
-        with_labels=True,
-        node_size=1800,
-        font_size=10,
-        width=2
-    )
+    labels = {sid: STATIONS[sid]["name"] for sid in station_ids}
+    nx.draw(G, pos, with_labels=True, labels=labels, node_size=1800, font_size=8, width=2)
 
     edge_labels = nx.get_edge_attributes(G, "weight")
-
-    nx.draw_networkx_edge_labels(
-        G,
-        pos,
-        edge_labels=edge_labels,
-        font_size=8,
-        rotate=False
-    )
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8, rotate=False)
 
     plt.title(title)
     plt.axis("off")
 
     plt.tight_layout()
 
-    plt.savefig(
-        save_path,
-        dpi=300,
-        bbox_inches="tight"
-    )
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
 
     plt.close()
     
@@ -256,22 +231,19 @@ def main() -> None:
     best_geo = None
     for alpha in args.alphas:
         try:
-            W_geo, _ = train_gtvmin(stations, station_ids, A_geo, alpha, args.iterations, args.lr, args.regularize_intercept)
+            W_geo, hist_geo = train_gtvmin(stations, station_ids, A_geo, alpha, args.iterations, args.lr, args.regularize_intercept)
             val_mse, val_mae, _ = evaluate_params(W_geo, stations, station_ids, "val")
             print(f"  System A alpha={alpha:g}: val MSE={val_mse:.4f}, val MAE={val_mae:.4f}")
         except FloatingPointError as exc:
             print(f"  System A alpha={alpha:g}: skipped ({exc})")
             continue
         if best_geo is None or val_mse < best_geo["val_mse"]:
-            best_geo = {"alpha": alpha, "val_mse": val_mse, "W": W_geo}
+            best_geo = {"alpha": alpha, "val_mse": val_mse, "W": W_geo, "loss_hist": hist_geo}
 
     if best_geo is None:
         raise RuntimeError("All System A alpha values diverged. Try --lr 0.001")
         
-    _, loss_hist_geo = train_gtvmin(
-        stations, station_ids, A_geo,
-        best_geo["alpha"], args.iterations, args.lr, args.regularize_intercept
-    )
+    loss_hist_geo = best_geo["loss_hist"] 
 
     summary, detail = evaluate_all_splits(
         f"System A Geographic (alpha={best_geo['alpha']:g}, k={args.k})",
@@ -290,22 +262,19 @@ def main() -> None:
             continue
         for alpha in args.alphas:
             try:
-                W_corr, _ = train_gtvmin(stations, station_ids, A_corr, alpha, args.iterations, args.lr, args.regularize_intercept)
+                W_corr, hist_corr = train_gtvmin(stations, station_ids, A_corr, alpha, args.iterations, args.lr, args.regularize_intercept)
                 val_mse, val_mae, _ = evaluate_params(W_corr, stations, station_ids, "val")
                 print(f"  System B threshold={threshold:g}, alpha={alpha:g}, edges={n_edges}: val MSE={val_mse:.4f}, val MAE={val_mae:.4f}")
             except FloatingPointError as exc:
                 print(f"  System B threshold={threshold:g}, alpha={alpha:g}: skipped ({exc})")
                 continue
             if best_corr is None or val_mse < best_corr["val_mse"]:
-                best_corr = {"threshold": threshold, "alpha": alpha, "val_mse": val_mse, "W": W_corr, "A": A_corr, "n_edges": n_edges}
+                best_corr = {"threshold": threshold, "alpha": alpha, "val_mse": val_mse, "W": W_corr, "A": A_corr, "n_edges": n_edges, "loss_hist": hist_corr}
 
     if best_corr is None:
         raise RuntimeError("No valid correlation graph. Try lower thresholds, e.g. --corr_thresholds 0.1 0.2 0.3 0.4 0.5")
 
-    _, loss_hist_corr = train_gtvmin(
-        stations, station_ids, best_corr["A"],
-        best_corr["alpha"], args.iterations, args.lr, args.regularize_intercept
-    )
+    loss_hist_corr = best_corr["loss_hist"] 
 
     graph_edges_dataframe(best_corr["A"], station_ids, STATIONS).to_csv(out_dir / "system_B_correlation_edges.csv", index=False)
     summary, detail = evaluate_all_splits(
